@@ -1,3 +1,8 @@
+import time
+start_time = time.time()
+import heapq as hq
+from collections import deque
+
 OBJETIVO = "12345678_"
 
 class Nodo:
@@ -83,6 +88,21 @@ def expande(nodo):
     return lista
 
 
+def contaInversores(estado):
+	tot_inversores = 0
+	espaco_vazio = '_'
+	for i in range(0, 9):
+		for j in range(i + 1, 9):
+			if estado[j] != espaco_vazio and estado[i] != espaco_vazio and estado[i] > estado[j]:
+				tot_inversores += 1
+	return tot_inversores
+
+	
+def ehSolucionavel(estado) :
+	tot_inversores = contaInversores([j for sub in estado for j in sub])
+	return (tot_inversores % 2 == 0)
+
+
 def bfs(estado):
     """
     Recebe um estado (string), executa a busca em LARGURA e
@@ -92,25 +112,37 @@ def bfs(estado):
     :param estado: str
     :return:
     """
-    X = []
-    F = []
+    if not ehSolucionavel(estado):
+        return None
+    X = set()
+    F = deque()
     caminho = []
     estado_inicial = Nodo(estado)
+
     F.append(estado_inicial)
 
-    while F != []:
-        v = F.pop(0)
+
+    while F :
+        v = F.popleft()
+        
         if v.estado == OBJETIVO:
             aux = v
             while aux.pai is not None:
-                caminho.insert(aux.custo, aux.acao)
+                caminho.insert(0, aux.acao)
                 aux = aux.pai
             return caminho
-        if v not in X :
-            X.append(v)
+
+        if v.estado not in X:
+            X.add(v.estado)
             vizinhos = expande(v)
             for vizinho in vizinhos:
                 F.append(vizinho)
+    
+    return None
+    
+
+#print(bfs('1235_6478'))
+#print("--- %s seconds ---" % (time.time() - start_time))
 
 
 def dfs(estado):
@@ -122,9 +154,44 @@ def dfs(estado):
     :param estado: str
     :return:
     """
-    # substituir a linha abaixo pelo seu codigo
-    raise NotImplementedError
+    if not ehSolucionavel(estado):
+        return None
+    X = set()
+    F = dict()
+    caminho = []
+    estado_inicial = Nodo(estado)
 
+    F[estado_inicial.estado] = estado_inicial
+
+
+    while F != {}:
+        v = F.popitem()[1]
+        
+        if v.estado == OBJETIVO:
+            aux = v
+            while aux.pai is not None:
+                caminho.insert(0, aux.acao)
+                aux = aux.pai
+            return caminho
+
+        if v.estado not in X:
+            X.add(v.estado)
+            vizinhos = expande(v)
+            for vizinho in vizinhos:
+                F[vizinho.estado] = vizinho
+
+    return None
+
+def calcula_hamming(estado):
+    vet = list(estado)
+    obj = list(OBJETIVO)
+    h = 0
+    
+    for i in range(8):
+        if vet[i] != obj[i]:
+            h = h + 1
+
+    return h
 
 def astar_hamming(estado):
     """
@@ -135,8 +202,40 @@ def astar_hamming(estado):
     :param estado: str
     :return:
     """
-    # substituir a linha abaixo pelo seu codigo
-    raise NotImplementedError
+    if not ehSolucionavel(estado):
+        return None
+    X = set()
+    F = []
+    caminho = []
+    estado_inicial = Nodo(estado)
+    min = 2147483647
+
+    F.insert(0, estado_inicial)
+
+
+    while F != []:
+        for nodo in F:
+            f = nodo.custo + calcula_hamming(nodo.estado)
+            nodo.custo = f
+            if min > f:
+                min = f
+
+        v = F.popleft()
+        
+        if v.estado == OBJETIVO:
+            aux = v
+            while aux.pai is not None:
+                caminho.insert(0, aux.acao)
+                aux = aux.pai
+            return caminho
+
+        if v.estado not in X:
+            X.add(v.estado)
+            vizinhos = expande(v)
+            for vizinho in vizinhos:
+                F.append(vizinho)
+    
+    return None
 
 
 def astar_manhattan(estado):
@@ -148,5 +247,7 @@ def astar_manhattan(estado):
     :param estado: str
     :return:
     """
+    if not ehSolucionavel(estado):
+        return None
     # substituir a linha abaixo pelo seu codigo
     raise NotImplementedError
