@@ -1,3 +1,5 @@
+import time
+
 OBJETIVO = "12345678_"
 
 class Nodo:
@@ -82,7 +84,6 @@ def expande(nodo):
 
     return lista
 
-
 def bfs(estado):
     """
     Recebe um estado (string), executa a busca em LARGURA e
@@ -92,26 +93,49 @@ def bfs(estado):
     :param estado: str
     :return:
     """
-    X = []
-    F = []
+    X = set()
+    F = dict()
+
+    cont = 0
+
+    cont_primeiro = 0
+
     caminho = []
     estado_inicial = Nodo(estado)
-    F.append(estado_inicial)
 
-    while F != []:
-        v = F.pop(0)
+    chave_estado_inicial = estado_inicial.estado
+
+    F[cont] = {
+        'estado': estado_inicial.estado,
+        'nodo': estado_inicial
+    }
+ 
+    while F != {}:
+        v = F[cont_primeiro]['nodo']
+        cont_primeiro = cont_primeiro +1
+
+        # Não funciona direito esse caso
+        # if (cont_primeiro == cont):
+        #    print('NÃO ACHOU SOLUÇÃO')
+        #    return None
+
+        
         if v.estado == OBJETIVO:
+            print(f"\nACHEI o estado {v.estado}")
             aux = v
             while aux.pai is not None:
-                caminho.insert(aux.custo, aux.acao)
+                caminho.insert(0, aux.acao)
                 aux = aux.pai
             return caminho
-        if v not in X :
-            X.append(v)
+
+        if v.estado not in X:
+            X.add(v.estado)
             vizinhos = expande(v)
             for vizinho in vizinhos:
-                F.append(vizinho)
-
+                cont = cont+1
+                F[cont] = {
+                    'estado': vizinho.estado,
+                    'nodo': vizinho}       
 
 def dfs(estado):
     """
