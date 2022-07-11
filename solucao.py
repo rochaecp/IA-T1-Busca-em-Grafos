@@ -2,6 +2,7 @@ import time
 start_time = time.time()
 import heapq as hq
 from collections import deque
+import numpy as np 
 
 OBJETIVO = "12345678_"
 
@@ -97,10 +98,20 @@ def contaInversores(estado):
 				tot_inversores += 1
 	return tot_inversores
 
-	
+
 def ehSolucionavel(estado) :
 	tot_inversores = contaInversores([j for sub in estado for j in sub])
 	return (tot_inversores % 2 == 0)
+
+
+def criar_matriz(estado):
+    """ 
+    Recebe um estado (string - ex.: "12345678_") e retorna uma matriz 3x3 
+    """
+    lista_estado = list(estado)
+    matriz = np.array(lista_estado).reshape(3, 3)
+    
+    return matriz
 
 
 def bfs(estado):
@@ -141,10 +152,6 @@ def bfs(estado):
     return None
     
 
-#print(bfs('1235_6478'))
-#print("--- %s seconds ---" % (time.time() - start_time))
-
-
 def dfs(estado):
     """
     Recebe um estado (string), executa a busca em PROFUNDIDADE e
@@ -182,6 +189,7 @@ def dfs(estado):
 
     return None
 
+
 def calcula_hamming(estado):
     vet = list(estado)
     obj = list(OBJETIVO)
@@ -192,6 +200,58 @@ def calcula_hamming(estado):
             h = h + 1
 
     return h
+
+
+def calcula_manhattan(elemento, elem_linha, elem_coluna, indices_objetivo):
+    return int(abs(int(elem_linha) - int(indices_objetivo[str(elemento)]['linha'])) + abs(int(elem_coluna) - int(indices_objetivo[str(elemento)]['coluna'])))
+
+
+def calcula_indice_objetivo(matriz):
+    indices_objetivo = {}
+
+    for i in range(3):
+        for j in range(3):
+            numero = matriz[i][j]
+            indices_objetivo[numero] = { 'linha': i, 'coluna': j }
+    
+    return indices_objetivo
+
+
+matriz_objetivo = criar_matriz(OBJETIVO)
+indices_objetivo = calcula_indice_objetivo(matriz_objetivo)
+
+
+def calcula_distancia_heuristica_manhattan_elemento(estado, elemento):
+    """
+    Recebe um estado(string) e um elemento
+    Retorna a distância heuristica de manhattan até o objetivo
+    """
+    matriz_estado = criar_matriz(estado)
+    linha = int(np.where(matriz_estado == str(elemento))[0][0])
+    coluna = int(np.where(matriz_estado == str(elemento))[1][0])
+    distancia_heursitica = calcula_manhattan(elemento, linha, coluna, indices_objetivo)
+
+    return int(distancia_heursitica)
+
+
+def calculla_distancia_heuristica_manhattan_geral(estado):
+    matriz_estado = criar_matriz(estado)
+
+    """
+    Terá elemento: distancia heurística até a posição correta
+    # Ex: '8': 3 - 8 é o elemento e 3 é a distancia heurística até a posição correta
+    """
+    heuristica_manhattan = {}
+
+    for i in range(3):
+        for j in range(3):
+            if matriz_estado[i][j] != "_":
+                if matriz_estado[i][j] != matriz_objetivo[i][j]:
+                    elemento = matriz_estado[i][j]
+                    distancia_heursitica = calcula_manhattan(elemento, i, j, indices_objetivo)
+                    heuristica_manhattan[elemento] = distancia_heursitica
+    
+    return heuristica_manhattan
 
 def astar_hamming(estado):
     """
@@ -248,6 +308,20 @@ def astar_manhattan(estado):
     :return:
     """
     if not ehSolucionavel(estado):
-        return None
-    # substituir a linha abaixo pelo seu codigo
-    raise NotImplementedError
+        pass#return None
+
+    print("Calculando distância de um elemento específico...")
+    elemento = 1
+    distancia_elemento = calcula_distancia_heuristica_manhattan_elemento(estado, elemento)
+
+    print("A Distância do elemento " + str(elemento) +  " é: " +str(distancia_elemento))
+
+    print("\n\nCalculando distância de todos os elementos...")
+    distancia_todos_elementos = calculla_distancia_heuristica_manhattan_geral(estado)
+    print(distancia_todos_elementos)
+
+    for elemento in distancia_todos_elementos:
+        print("A Distância do elemento " + str(elemento) +  " é: " +str(distancia_todos_elementos[elemento]))
+
+
+astar_manhattan("2_3541687")
