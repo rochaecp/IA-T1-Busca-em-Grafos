@@ -1,5 +1,3 @@
-import time
-start_time = time.time()
 import heapq as hq
 from collections import deque
 import numpy as np 
@@ -22,6 +20,61 @@ class Nodo:
         self.pai = pai
         self.acao = acao
         self.custo = custo
+
+class Nodo2:
+    """
+    Implemente a classe Nodo com os atributos descritos na funcao init
+    """
+    def __init__(self, estado = '', pai = None, acao = None, custo = 0):
+        """
+        Inicializa o nodo com os atributos recebidos
+        :param estado:str, representacao do estado do 8-puzzle
+        :param pai:Nodo, referencia ao nodo pai, (None no caso do nó raiz)
+        :param acao:str, acao a partir do pai que leva a este nodo (None no caso do nó raiz)
+        :param custo:int, custo do caminho da raiz até este nó
+        """
+        self.estado = estado
+        self.pai = pai
+        self.acao = acao
+        self.custo = custo
+
+    def __eq__(self, other):
+        return False
+
+    def __ne__(self, other):
+        return False
+
+    def __lt__(self, other):
+        return False
+
+    def __gt__(self, other):
+        return False
+
+    def __le__(self, other):
+        return False
+
+    def __ge__(self, other):
+        return False
+
+
+class FilaPrioridade:
+
+    def __init__(self):
+        self.fila = []
+        self.indice = 0
+
+    def adicionar_nodo(self, nodo, prioridade):
+        hq.heappush(self.fila, (prioridade, nodo))
+        self.indice += 1
+
+    def remover_nodo(self):
+        return hq.heappop(self.fila)
+    
+    def esta_vazia(self):
+        if len(self.fila) == 0:
+            return True
+        else:
+            return False
 
 
 def sucessor(estado):
@@ -84,6 +137,23 @@ def expande(nodo):
 
     for tupla in l:
         aux = Nodo(tupla[1], nodo, tupla[0], nodo.custo+1)
+        lista.append(aux)
+
+    return lista
+
+
+def expande2(nodo):
+    """
+    Recebe um nodo (objeto da classe Nodo) e retorna um iterable de nodos.
+    Cada nodo do iterable é contém um estado sucessor do nó recebido.
+    :param nodo: objeto da classe Nodo
+    :return:
+    """
+    lista = []
+    l = sucessor(nodo.estado)
+
+    for tupla in l:
+        aux = Nodo2(tupla[1], nodo, tupla[0], nodo.custo+1)
         lista.append(aux)
 
     return lista
@@ -160,7 +230,7 @@ def calcula_distancia_heuristica_manhattan_elemento(estado, elemento):
     return int(distancia_heursitica)
 
 
-def calculla_distancia_heuristica_manhattan_geral(estado):
+def calculla_distancia_heuristica_manhattan_total(estado):
     matriz_estado = criar_matriz(estado)
 
     """
@@ -168,6 +238,7 @@ def calculla_distancia_heuristica_manhattan_geral(estado):
     # Ex: '8': 3 - 8 é o elemento e 3 é a distancia heurística até a posição correta
     """
     heuristica_manhattan = {}
+    distancia_heuristica_total = 0
 
     for i in range(3):
         for j in range(3):
@@ -176,8 +247,9 @@ def calculla_distancia_heuristica_manhattan_geral(estado):
                     elemento = matriz_estado[i][j]
                     distancia_heursitica = calcula_manhattan(elemento, i, j, indices_objetivo)
                     heuristica_manhattan[elemento] = distancia_heursitica
+                    distancia_heuristica_total = distancia_heuristica_total + distancia_heursitica
     
-    return heuristica_manhattan
+    return distancia_heuristica_total
 
 
 #### Funções de Busca ####
@@ -268,24 +340,18 @@ def astar_hamming(estado):
     """
     if not ehSolucionavel(estado):
         return None
+
     X = set()
-    F = []
+    F = FilaPrioridade()
     caminho = []
-    estado_inicial = Nodo(estado)
-    min = 2147483647
+    nodo_inicial = Nodo2(estado)
+  
+    F.adicionar_nodo(nodo_inicial, 0)
 
-    F.insert(0, estado_inicial)
-
-
-    while F != []:
-        for nodo in F:
-            f = nodo.custo + calcula_hamming(nodo.estado)
-            nodo.custo = f
-            if min > f:
-                min = f
-
-        v = F.popleft()
-        
+    while not F.esta_vazia():
+       
+        v = F.remover_nodo()[1]
+                
         if v.estado == OBJETIVO:
             aux = v
             while aux.pai is not None:
@@ -295,10 +361,12 @@ def astar_hamming(estado):
 
         if v.estado not in X:
             X.add(v.estado)
-            vizinhos = expande(v)
+            vizinhos = expande2(v)
+            
             for vizinho in vizinhos:
-                F.append(vizinho)
-    
+                custo_mais_heuristica = (int(vizinho.custo) + int(calcula_hamming(vizinho.estado)))
+                F.adicionar_nodo(vizinho, int(custo_mais_heuristica))
+                
     return None
 
 
@@ -312,20 +380,38 @@ def astar_manhattan(estado):
     :return:
     """
     if not ehSolucionavel(estado):
-        pass#return None
+        return None
 
-    print("Calculando distância de um elemento específico...")
-    elemento = 1
-    distancia_elemento = calcula_distancia_heuristica_manhattan_elemento(estado, elemento)
+    X = set()
+    F = FilaPrioridade()
+    caminho = []
+    nodo_inicial = Nodo2(estado)
+    
+    F.adicionar_nodo(nodo_inicial, 0)
 
-    print("A Distância do elemento " + str(elemento) +  " é: " +str(distancia_elemento))
+    while not F.esta_vazia():
+        v = F.remover_nodo()[1]
+                
+        if v.estado == OBJETIVO:
+            aux = v
+            while aux.pai is not None:
+                caminho.insert(0, aux.acao)
+                aux = aux.pai
+            return caminho
 
-    print("\n\nCalculando distância de todos os elementos...")
-    distancia_todos_elementos = calculla_distancia_heuristica_manhattan_geral(estado)
-    print(distancia_todos_elementos)
+        if v.estado not in X:
+            X.add(v.estado)
+            vizinhos = expande2(v)
 
-    for elemento in distancia_todos_elementos:
-        print("A Distância do elemento " + str(elemento) +  " é: " +str(distancia_todos_elementos[elemento]))
+            for vizinho in vizinhos:
+                custo_mais_heuristica = (int(vizinho.custo) + int(calculla_distancia_heuristica_manhattan_total(vizinho.estado)))
+                F.adicionar_nodo(vizinho, int(custo_mais_heuristica))
 
 
-astar_manhattan("2_3541687")
+""" print("Ações:")
+tempo_inicio = time.time()
+print(len(astar_manhattan("2_3541687")))
+tempo_fim = time.time()
+
+print("\nTempo decorrido:")
+print(tempo_fim - tempo_inicio) """

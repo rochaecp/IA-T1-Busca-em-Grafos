@@ -2,6 +2,12 @@ import unittest
 import solucao as solucao
 
 
+entradas = {
+    '2_3541687': 23,
+    '413726_58': 6,
+    '85721643_': 24,
+    '8672543_1': 31,
+    '64785_321': 31}
 class TestaSolucao(unittest.TestCase):
     def test_sucessor(self):
         """
@@ -93,6 +99,37 @@ class TestaSolucao(unittest.TestCase):
         self.assertEqual(solucao_otima, solucao.bfs(estado))
         self.assertEqual(solucao_otima, solucao.astar_hamming(estado))
         self.assertEqual(solucao_otima, solucao.astar_manhattan(estado))
+
+
+    def testes_personalizados(self):
+        print("\nExecutando testes personalizados...\n")
+        for entrada in entradas:
+            print("Entrada: " + str(entrada))
+            if int(entradas[entrada]) == len(solucao.bfs(entrada)):
+                print("\tPassou em BFS")
+            else:
+                print("\t\tNÃO PASSOU em BFS. Ações: " + str(len(solucao.bfs(entrada))))
+
+            if len(solucao.dfs(entrada)):
+                print("\tPassou em DFS com " + str(len(solucao.dfs(entrada))) + " acões")
+            else:
+                print("\t\tNÃO PASSOU em DFS. Ações: " + str(len(solucao.dfs(entrada))))
+
+            if int(entradas[entrada]) == len(solucao.astar_hamming(entrada)):
+                print("\tPassou em A* Hamming")
+            else:
+                print("\t\tNÃO PASSOU em A* Hamming. Ações: " + str(len(solucao.astar_hamming(entrada))))
+
+            if int(entradas[entrada]) == len(solucao.astar_manhattan(entrada)):
+                print("\tPassou em A* Manhattan")
+            else:
+                print("\t\tNÃO PASSOU em A* Manhattan. Ações: " + str(len(solucao.astar_manhattan(entrada))))
+                print(solucao.astar_manhattan(entrada))
+            
+            print("\n\n")
+
+            
+   
 
 if __name__ == '__main__':
     unittest.main()
