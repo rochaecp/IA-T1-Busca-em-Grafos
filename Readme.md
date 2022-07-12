@@ -25,22 +25,22 @@ import numpy as np
 
 * **Custo:** 23
 * **Nós expandidos:** 101765
-* **Tempo decorrido:** 0.6552512645721436
+* **Tempo decorrido:** 0.6552512645721436 segundos
 
 #### DFS
 
 * **Custo:** 36981
 * **Nós expandidos:** 41768
-* **Tempo decorrido:** 0.5371363162994385
+* **Tempo decorrido:** 0.5371363162994385 segundos
 
 #### A* Hamming
 
 * **Custo:** 23
 * **Nós expandidos:** 12068
-* **Tempo decorrido:** 0.15481853485107422
+* **Tempo decorrido:** 0.15481853485107422 segundos
 
 #### A* Manhattan
 
 * **Custo:** 23
 * **Nós expandidos:** 1708
-* **Tempo decorrido:** 0.11936783790588379
+* **Tempo decorrido:** 0.11936783790588379 segundos
